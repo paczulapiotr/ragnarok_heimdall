@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace IdentityServerAspNetIdentity
 {
+    [Obsolete]
     public class SeedData
     {
         public static void EnsureSeedData(IServiceProvider provider)
