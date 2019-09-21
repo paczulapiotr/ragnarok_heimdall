@@ -29,6 +29,7 @@ namespace IdentityServerAspNetIdentity
         {
             Configuration = configuration;
             Environment = environment;
+            Settings.Setup(configuration);
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -112,7 +113,7 @@ namespace IdentityServerAspNetIdentity
                 options.AddPolicy("default", builder =>
                 {
                     builder
-                        .WithOrigins(Configuration["Security:ApiUrl"])
+                        .WithOrigins(Configuration["Security:ApiUrl"], Configuration["Security:ClientUrl"])
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
@@ -125,6 +126,10 @@ namespace IdentityServerAspNetIdentity
             if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                using (var scope = app.ApplicationServices.CreateScope())
+                {
+                    SeedData.EnsureSeedData(scope.ServiceProvider);
+                }
             }
             else
             {

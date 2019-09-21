@@ -85,6 +85,14 @@ namespace IdentityServer4.Quickstart.UI
                     // this will send back an access denied OIDC error response to the client.
                     await _interaction.GrantConsentAsync(context, ConsentResponse.Denied);
 
+                    // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
+                    if (await _clientStore.IsPkceClientAsync(context.ClientId))
+                    {
+                        // if the client is PKCE then we assume it's native, so this change in how to
+                        // return the response is for better UX for the end user.
+                        return View("Redirect", new RedirectViewModel { RedirectUrl = model.ReturnUrl });
+                    }
+
                     return Redirect(model.ReturnUrl);
                 }
                 else
@@ -104,6 +112,13 @@ namespace IdentityServer4.Quickstart.UI
 
                     if (context != null)
                     {
+                        if (await _clientStore.IsPkceClientAsync(context.ClientId))
+                        {
+                            // if the client is PKCE then we assume it's native, so this change in how to
+                            // return the response is for better UX for the end user.
+                            return View("Redirect", new RedirectViewModel { RedirectUrl = model.ReturnUrl });
+                        }
+
                         // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
                         return Redirect(model.ReturnUrl);
                     }

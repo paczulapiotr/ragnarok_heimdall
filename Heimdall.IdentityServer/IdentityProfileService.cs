@@ -1,10 +1,13 @@
-﻿using IdentityServer4.Extensions;
+﻿using IdentityModel;
+using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServerAspNetIdentity.Models;
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Heimdall.IdentityServer
@@ -23,16 +26,12 @@ namespace Heimdall.IdentityServer
 
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-            var sub = context.Subject.GetSubjectId();
-            var user = await _userManager.FindByIdAsync(sub);
-            if (user == null)
-            {
-                throw new ArgumentException("User not found");
-            }
+            var username = context.Subject.FindFirstValue(JwtClaimTypes.Subject);
+            var user = await _userManager.FindByNameAsync(username);
+            var claims = await _userManager.GetClaimsAsync(user);
+            claims.Add(new Claim(JwtClaimTypes.Subject, username));
 
-            var principal = await _claimsFactory.CreateAsync(user);
-            var claims = principal.Claims.ToList();
-            context.IssuedClaims = claims;
+            context.AddRequestedClaims(claims);
         }
 
         public async Task IsActiveAsync(IsActiveContext context)
