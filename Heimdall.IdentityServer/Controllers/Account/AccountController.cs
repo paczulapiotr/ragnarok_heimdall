@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using Heimdall.IdentityServer.Controllers.Account;
 using IdentityModel;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
@@ -148,7 +149,32 @@ namespace IdentityServer4.Quickstart.UI
             return View(vm);
         }
 
-        
+        [HttpGet]
+        public IActionResult Register() => View();
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if(ModelState.IsValid)
+            {
+                if (model.Password != model.RepeatPassword)
+                    ModelState.AddModelError("Password", "Reapeted password is incorrect");
+
+                var newUser = new ApplicationUser
+                {
+                    UserName = model.Username,
+                    Email = model.Email,
+                    EmailConfirmed = true,
+                };
+
+                var result = await _userManager.CreateAsync(newUser, model.Password);
+                if (result.Succeeded)
+                    return RedirectToAction(nameof(Login));
+            }
+
+            return RedirectToAction(nameof(Register));
+        }
+
         /// <summary>
         /// Show logout page
         /// </summary>

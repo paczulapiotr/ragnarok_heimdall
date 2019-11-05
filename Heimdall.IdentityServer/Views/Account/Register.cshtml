@@ -1,0 +1,49 @@
+﻿@model Heimdall.IdentityServer.Controllers.Account.RegisterViewModel
+
+<div class="login-page">
+    <div class="page-header">
+        <h1>Register</h1>
+    </div>
+
+    <partial name="_ValidationSummary" />
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Local Login</h3>
+                </div>
+                <div class="panel-body">
+                    <form asp-route="Register">
+                        <fieldset>
+                            <div class="form-group">
+                                <label asp-for="Username"></label>
+                                <input class="form-control" placeholder="Username" asp-for="Username" required autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Password"></label>
+                                <input type="password" class="form-control" placeholder="Password" asp-for="Password" required autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="RepeatPassword">Repeat password</label>
+                                <input type="password" class="form-control" placeholder="Repeat Password" asp-for="RepeatPassword" required autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Email"></label>
+                                <input type="email" class="form-control" placeholder="Repeat Password" asp-for="Email" required autocomplete="off">
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" asp-for="AgreeToTerms" required>
+                                <label class="form-check-label" asp-for="AgreeToTerms">Agree to terms</label>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" name="button" value="login">Register</button>
+                                <a href="@Url.Action(nameof(AccountController.Login), "Account")" class="btn btn-default" name="button" value="cancel">Cancel</a>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
