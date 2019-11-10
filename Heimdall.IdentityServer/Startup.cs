@@ -3,6 +3,7 @@
 
 
 using Heimdall.IdentityServer;
+using Heimdall.IdentityServer.Clients;
 using IdentityServerAspNetIdentity.Data;
 using IdentityServerAspNetIdentity.Models;
 using Microsoft.AspNetCore.Builder;
@@ -36,7 +37,8 @@ namespace IdentityServerAspNetIdentity
         {
             var connectionString = Configuration.GetConnectionString("IdentityServer");
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-
+            services.AddHttpClient();
+            services.AddScoped<IMimirClient, MimirClient>();
             services.AddDbContext<ApplicationDbContext>(optionsAction: (opts) => opts.UseSqlServer(connectionString));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -128,7 +130,7 @@ namespace IdentityServerAspNetIdentity
                 app.UseDeveloperExceptionPage();
                 using (var scope = app.ApplicationServices.CreateScope())
                 {
-                    SeedData.EnsureSeedData(scope.ServiceProvider);
+                    //SeedData.EnsureSeedData(scope.ServiceProvider);
                 }
             }
             else

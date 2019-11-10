@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using Heimdall.IdentityServer.Clients;
 using Heimdall.IdentityServer.Controllers.Account;
 using IdentityModel;
 using IdentityServer4.Events;
@@ -31,6 +32,7 @@ namespace IdentityServer4.Quickstart.UI
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
+        private readonly IMimirClient _mimirClient;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -38,7 +40,8 @@ namespace IdentityServer4.Quickstart.UI
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
-            IEventService events)
+            IEventService events,
+            IMimirClient mimirClient)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -46,6 +49,7 @@ namespace IdentityServer4.Quickstart.UI
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
             _events = events;
+            _mimirClient = mimirClient;
         }
 
         /// <summary>
@@ -155,7 +159,7 @@ namespace IdentityServer4.Quickstart.UI
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 if (model.Password != model.RepeatPassword)
                     ModelState.AddModelError("Password", "Reapeted password is incorrect");
@@ -169,9 +173,17 @@ namespace IdentityServer4.Quickstart.UI
 
                 var result = await _userManager.CreateAsync(newUser, model.Password);
                 if (result.Succeeded)
-                    return RedirectToAction(nameof(Login));
-            }
+                {
+                    var mimirSuccess = await _mimirClient.CreateUserAsync(newUser.Id, newUser.UserName);
+                    if (mimirSuccess)
+                    {
+                        return RedirectToAction(nameof(Login));
+                    }
 
+                    await _userManager.DeleteAsync(newUser);
+                    ModelState.AddModelError("Mimir Error", "Error in Mimir occured when creating an account");
+                }
+            }
             return RedirectToAction(nameof(Register));
         }
 
