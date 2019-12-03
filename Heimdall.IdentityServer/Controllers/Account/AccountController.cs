@@ -154,10 +154,14 @@ namespace IdentityServer4.Quickstart.UI
         }
 
         [HttpGet]
-        public IActionResult Register() => View();
+        public IActionResult Register(string returnUrl)
+        {
+            ViewData["returnUrl"] = returnUrl;
+            return View();
+        }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public async Task<IActionResult> Register([FromForm] RegisterViewModel model, [FromQuery] string returnUrl)
         {
             if (ModelState.IsValid)
             {
@@ -174,17 +178,23 @@ namespace IdentityServer4.Quickstart.UI
                 var result = await _userManager.CreateAsync(newUser, model.Password);
                 if (result.Succeeded)
                 {
-                    var mimirSuccess = await _mimirClient.CreateUserAsync(newUser.Id, newUser.UserName);
-                    if (mimirSuccess)
+                    try
                     {
-                        return RedirectToAction(nameof(Login));
-                    }
+                        var mimirSuccess = await _mimirClient.CreateUserAsync(newUser.Id, newUser.UserName);
+                        if (mimirSuccess)
+                        {
+                            return RedirectToAction(nameof(Login), new { returnUrl });
+                        }
 
-                    await _userManager.DeleteAsync(newUser);
-                    ModelState.AddModelError("Mimir Error", "Error in Mimir occured when creating an account");
+                    }
+                    catch
+                    {
+                        await _userManager.DeleteAsync(newUser);
+                        ModelState.AddModelError("Mimir Error", "Error in Mimir occured when creating an account");
+                    }
                 }
             }
-            return RedirectToAction(nameof(Register));
+            return RedirectToAction(nameof(Register), new { returnUrl });
         }
 
         /// <summary>
