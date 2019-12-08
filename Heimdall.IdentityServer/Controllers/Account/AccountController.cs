@@ -174,27 +174,41 @@ namespace IdentityServer4.Quickstart.UI
                     Email = model.Email,
                     EmailConfirmed = true,
                 };
-
-                var result = await _userManager.CreateAsync(newUser, model.Password);
-                if (result.Succeeded)
+                if (_userManager.Users.Any(x => x.Email == model.Email))
                 {
-                    try
+                    ModelState.AddModelError(string.Empty, $"'{model.Email}' email is already taken.");
+                }
+                else
+                {
+                    var result = await _userManager.CreateAsync(newUser, model.Password);
+                    if (result.Succeeded)
                     {
-                        var mimirSuccess = await _mimirClient.CreateUserAsync(newUser.Id, newUser.UserName);
-                        if (mimirSuccess)
+                        try
                         {
-                            return RedirectToAction(nameof(Login), new { returnUrl });
-                        }
+                            var mimirSuccess = await _mimirClient.CreateUserAsync(newUser.Id, newUser.UserName);
+                            if (mimirSuccess)
+                            {
+                                return RedirectToAction(nameof(Login), new { returnUrl });
+                            }
 
+                        }
+                        catch
+                        {
+                            await _userManager.DeleteAsync(newUser);
+                            ModelState.AddModelError("Mimir Error", "Error in Mimir occured when creating an account");
+                        }
                     }
-                    catch
+                    else
                     {
-                        await _userManager.DeleteAsync(newUser);
-                        ModelState.AddModelError("Mimir Error", "Error in Mimir occured when creating an account");
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError(error.Code, error.Description);
+                        }
                     }
                 }
             }
-            return RedirectToAction(nameof(Register), new { returnUrl });
+            ViewData["returnUrl"] = returnUrl;
+            return View();
         }
 
         /// <summary>
