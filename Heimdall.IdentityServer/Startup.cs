@@ -30,7 +30,7 @@ namespace IdentityServerAspNetIdentity
         {
             Configuration = configuration;
             Environment = environment;
-            Settings.Setup(configuration);
+            Settings.Setup(configuration, environment);
         }
 
         public void ConfigureServices(IServiceCollection services)
