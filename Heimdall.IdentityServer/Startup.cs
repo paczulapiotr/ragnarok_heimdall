@@ -35,7 +35,9 @@ namespace IdentityServerAspNetIdentity
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionString = Configuration.GetConnectionString("IdentityServer");
+            var connectionString = Environment.IsDevelopment()
+                ? Configuration.GetConnectionString("Local")
+                : Configuration.GetConnectionString("Azure");
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
             services.AddHttpClient();
             services.AddScoped<IMimirClient, MimirClient>();
@@ -110,12 +112,15 @@ namespace IdentityServerAspNetIdentity
                 builder.AddSigningCredential(new RsaSecurityKey(RsaParameters_2048), RsaSigningAlgorithm.RS256);
             }
 
+            var apiOrigin = Environment.IsDevelopment() ? Configuration["Security:Local:ApiUrl"] : Configuration["Security:Azure:ApiUrl"];
+            var clientOrigin = Environment.IsDevelopment() ? Configuration["Security:Local:ClientUrl"] : Configuration["Security:Azure:ClientUrl"];
+
             services.AddCors(options =>
             {
                 options.AddPolicy("default", builder =>
                 {
                     builder
-                        .WithOrigins(Configuration["Security:ApiUrl"], Configuration["Security:ClientUrl"])
+                        .WithOrigins(apiOrigin, clientOrigin)
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
