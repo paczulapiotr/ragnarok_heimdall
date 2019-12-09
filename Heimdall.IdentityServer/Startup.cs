@@ -45,8 +45,20 @@ namespace IdentityServerAspNetIdentity
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
-
-           
+            
+            var apiOrigin = Environment.IsDevelopment() ? Configuration["Security:Local:ApiUrl"] : Configuration["Security:Azure:ApiUrl"];
+            var clientOrigin = !Environment.IsDevelopment() ? Configuration["Security:Local:ClientUrl"] : Configuration["Security:Azure:ClientUrl"];
+            services.AddCors(options =>
+            {
+                options.AddPolicy("default", builder =>
+                {
+                    builder
+                        .WithOrigins(apiOrigin, clientOrigin)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+            });
 
             services.Configure<IISOptions>(iis =>
             {
@@ -109,21 +121,6 @@ namespace IdentityServerAspNetIdentity
                 builder.AddSigningCredential(new RsaSecurityKey(RsaParameters_2048), RsaSigningAlgorithm.RS256);
             }
 
-            var apiOrigin = Environment.IsDevelopment() ? Configuration["Security:Local:ApiUrl"] : Configuration["Security:Azure:ApiUrl"];
-            var clientOrigin = Environment.IsDevelopment() ? Configuration["Security:Local:ClientUrl"] : Configuration["Security:Azure:ClientUrl"];
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy("default", builder =>
-                {
-                    builder
-                        .WithOrigins(apiOrigin, clientOrigin)
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                });
-            });
-
             services.AddMvc()
                .AddMvcOptions(options => options.EnableEndpointRouting = false)
                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
@@ -144,12 +141,12 @@ namespace IdentityServerAspNetIdentity
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.UseCors("default");
             app.UseRouting();
             app.UseStaticFiles();
             app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseCors("default");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
