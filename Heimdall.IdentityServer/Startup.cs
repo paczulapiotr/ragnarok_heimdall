@@ -47,7 +47,7 @@ namespace IdentityServerAspNetIdentity
                 .AddDefaultTokenProviders();
             
             var apiOrigin = Environment.IsDevelopment() ? Configuration["Security:Local:ApiUrl"] : Configuration["Security:Azure:ApiUrl"];
-            var clientOrigin = !Environment.IsDevelopment() ? Configuration["Security:Local:ClientUrl"] : Configuration["Security:Azure:ClientUrl"];
+            var clientOrigin = Environment.IsDevelopment() ? Configuration["Security:Local:ClientUrl"] : Configuration["Security:Azure:ClientUrl"];
             services.AddCors(options =>
             {
                 options.AddPolicy("default", builder =>
