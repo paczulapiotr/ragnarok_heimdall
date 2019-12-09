@@ -42,14 +42,11 @@ namespace IdentityServerAspNetIdentity
             services.AddHttpClient();
             services.AddScoped<IMimirClient, MimirClient>();
             services.AddDbContext<ApplicationDbContext>(optionsAction: (opts) => opts.UseSqlServer(connectionString));
-
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddMvc()
-                .AddMvcOptions(options => options.EnableEndpointRouting = false)
-                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
+           
 
             services.Configure<IISOptions>(iis =>
             {
@@ -126,6 +123,10 @@ namespace IdentityServerAspNetIdentity
                         .AllowCredentials();
                 });
             });
+
+            services.AddMvc()
+               .AddMvcOptions(options => options.EnableEndpointRouting = false)
+               .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
         }
 
         public void Configure(IApplicationBuilder app)
@@ -148,6 +149,7 @@ namespace IdentityServerAspNetIdentity
             app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseCors("default");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
