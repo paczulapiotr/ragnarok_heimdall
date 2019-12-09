@@ -190,12 +190,12 @@ namespace IdentityServer4.Quickstart.UI
                             {
                                 return RedirectToAction(nameof(Login), new { returnUrl });
                             }
-
                         }
-                        catch
+                        catch (Exception ex)
                         {
                             await _userManager.DeleteAsync(newUser);
-                            ModelState.AddModelError("Mimir Error", "Error in Mimir occured when creating an account");
+                            var message = ex.Message + ex.InnerException != null ? "INNER:" + ex.InnerException.Message : "";
+                            ModelState.AddModelError("Mimir Error", "Error in Mimir occured when creating an account: " + message);
                         }
                     }
                     else
