@@ -194,7 +194,7 @@ namespace IdentityServer4.Quickstart.UI
                         catch (Exception ex)
                         {
                             await _userManager.DeleteAsync(newUser);
-                            var message = ex.Message + ex.InnerException != null ? "INNER:" + ex.InnerException.Message : "";
+                            var message = ex.Message;
                             ModelState.AddModelError("Mimir Error", "Error in Mimir occured when creating an account: " + message);
                         }
                     }
