@@ -4,9 +4,7 @@
 
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityServerAspNetIdentity
 {
@@ -14,7 +12,13 @@ namespace IdentityServerAspNetIdentity
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            CreateWebHostBuilder(args)
+                .ConfigureLogging((context, logging) =>
+            {
+                logging.ClearProviders();
+                logging.AddDebug();
+                logging.AddConsole();
+            }).Build().Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args)

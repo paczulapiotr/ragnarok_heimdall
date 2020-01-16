@@ -23,9 +23,8 @@ namespace Heimdall.IdentityServer
 
         public Security(IConfiguration configuration, IWebHostEnvironment environment)
         {
-            var env = environment.IsDevelopment() ? "Local" : "Azure";
-            ApiUrl = configuration[$"{nameof(Security)}:{env}:{nameof(ApiUrl)}"];
-            ClientUrl = configuration[$"{nameof(Security)}:{env}:{nameof(ClientUrl)}"];
+            ApiUrl = configuration[$"{nameof(Security)}:{nameof(ApiUrl)}"];
+            ClientUrl = configuration[$"{nameof(Security)}:{nameof(ClientUrl)}"];
             _environment = environment;
         }
         public string ClientUrl { get; private set; }

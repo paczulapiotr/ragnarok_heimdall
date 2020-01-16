@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Reflection;
@@ -23,25 +24,28 @@ namespace IdentityServerAspNetIdentity
 {
     public class Startup
     {
+        public ILogger<Startup> Logger;
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment Environment { get; }
 
-        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment, ILogger<Startup> logger)
         {
             Configuration = configuration;
             Environment = environment;
+            Logger = logger;
             Settings.Setup(configuration, environment);
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionString = Environment.IsDevelopment()
-                ? Configuration.GetConnectionString("Local")
-                : Configuration.GetConnectionString("Azure");
+            var connectionString = Configuration.GetConnectionString("Identity");
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
             services.AddHttpClient();
             services.AddScoped<IMimirClient, MimirClient>();
-            services.AddDbContext<ApplicationDbContext>(optionsAction: (opts) => opts.UseSqlServer(connectionString));
+            services.AddDbContext<ApplicationDbContext>(optionsAction: (opts) =>
+            {
+                opts.UseSqlServer(connectionString);
+            });
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
@@ -101,7 +105,7 @@ namespace IdentityServerAspNetIdentity
                 .AddProfileService<IdentityProfileService>()
                 .AddAspNetIdentity<ApplicationUser>();
 
-            if (Environment.IsDevelopment()) 
+            if (Environment.IsDevelopment())
             {
                 builder.AddDeveloperSigningCredential();
             }
@@ -125,16 +129,15 @@ namespace IdentityServerAspNetIdentity
                .AddMvcOptions(options => options.EnableEndpointRouting = false)
                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
         }
-
+        
         public void Configure(IApplicationBuilder app)
         {
+
+            app.MigrateDatabase(Logger);
+            
             if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                using (var scope = app.ApplicationServices.CreateScope())
-                {
-                    //SeedData.EnsureSeedData(scope.ServiceProvider);
-                }
             }
             else
             {
