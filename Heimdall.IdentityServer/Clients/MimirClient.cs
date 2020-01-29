@@ -28,9 +28,7 @@ namespace Heimdall.IdentityServer.Clients
         {
             using (var client = _clientFactory.CreateClient())
             {
-                var urlRoot = _environment.IsDevelopment()
-                    ? _configuration["Security:Local:ApiUrl"]
-                    : _configuration["Security:Azure:ApiUrl"];
+                var urlRoot = _configuration["Security:ApiUrl"];
                 var request = new HttpRequestMessage(HttpMethod.Put, $"{urlRoot}/api/user/create");
                 request.Content = new StringContent(
                     JObject.FromObject(new { authId, name }).ToString(),
